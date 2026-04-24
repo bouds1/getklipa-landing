@@ -48,11 +48,11 @@
 
       <div
         class="waitlist-embed"
-        data-klipa-tally-waitlist="hero"
+        data-klipa-waitlist="hero"
         role="region"
         aria-label="Join the Klipa waitlist"
       >
-        <div class="tally-embed-wrap"></div>
+        <div class="waitlist-box"></div>
         <p class="form-error" hidden role="alert"></p>
         <p class="form-success" hidden role="status">You're on the list. We'll be in touch.</p>
       </div>
@@ -179,11 +179,11 @@
 
       <div
         class="waitlist-embed"
-        data-klipa-tally-waitlist="cta"
+        data-klipa-waitlist="cta"
         role="region"
         aria-label="Join the Klipa waitlist"
       >
-        <div class="tally-embed-wrap"></div>
+        <div class="waitlist-box"></div>
         <p class="form-error" hidden role="alert"></p>
         <p class="form-success" hidden role="status">You're on the list. We'll be in touch.</p>
       </div>
@@ -304,14 +304,28 @@
 
   <template id="klipa-waitlist-fallback-hero">
     <form class="waitlist-form" action="#" method="post" novalidate>
-      <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
-      <button type="submit" class="btn">Join the waitlist</button>
+      <div class="form-hp-wrap" aria-hidden="true">
+        <input type="checkbox" name="botcheck" class="form-hp" tabindex="-1" autocomplete="off" />
+        <input type="text" class="form-hp" name="company_website" tabindex="-1" autocomplete="off" value="" />
+      </div>
+      <div class="waitlist-form-row">
+        <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
+        <button type="submit" class="btn">Join the waitlist</button>
+      </div>
+      <div class="h-captcha" data-captcha="true" data-size="compact"></div>
     </form>
   </template>
   <template id="klipa-waitlist-fallback-cta">
     <form class="waitlist-form" action="#" method="post" novalidate>
-      <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
-      <button type="submit">Join</button>
+      <div class="form-hp-wrap" aria-hidden="true">
+        <input type="checkbox" name="botcheck" class="form-hp" tabindex="-1" autocomplete="off" />
+        <input type="text" class="form-hp" name="company_website" tabindex="-1" autocomplete="off" value="" />
+      </div>
+      <div class="waitlist-form-row">
+        <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
+        <button type="submit">Join</button>
+      </div>
+      <div class="h-captcha" data-captcha="true" data-size="compact"></div>
     </form>
   </template>
 
@@ -324,6 +338,10 @@
         </div>
         <p class="partner-dialog-lead">We’ll follow up with a one-pager and next steps. All fields are required except phone and message (both optional).</p>
         <form class="partner-dialog-form" id="partner-inquiry-form" novalidate>
+          <div class="form-hp-wrap" aria-hidden="true">
+            <input type="checkbox" name="botcheck" class="form-hp" tabindex="-1" autocomplete="off" />
+            <input type="text" class="form-hp" name="company_website" tabindex="-1" autocomplete="off" value="" />
+          </div>
           <div class="partner-field">
             <label for="partner-name">Your name</label>
             <input type="text" id="partner-name" name="name" autocomplete="name" required />
@@ -355,6 +373,9 @@
               aria-label="Message (optional)"
             ></textarea>
           </div>
+          <div class="partner-hcaptcha">
+            <div class="h-captcha" data-captcha="true" data-size="normal"></div>
+          </div>
           <p class="partner-dialog-error" id="partner-dialog-error" hidden role="alert"></p>
           <div class="partner-dialog-actions">
             <button type="button" class="btn btn-secondary" id="partner-form-cancel">Cancel</button>
@@ -369,7 +390,7 @@
     </div>
   </dialog>
 
-  <script src="https://tally.so/widgets/embed.js" defer></script>
   <script src="/scripts/main.js" defer></script>
+  <script src="https://web3forms.com/client/script.js" defer></script>
 </body>
 </html>

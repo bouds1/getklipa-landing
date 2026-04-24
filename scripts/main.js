@@ -1,11 +1,12 @@
 /* Web3Forms: waitlist and partner/retailer use different forms (two access keys; set per env on getklipa.com).
    Get or rotate at https://web3forms.com
-   Current values: shared test key; replace each with its production form key before/after domain deploy.
-   Waitlist: if waitlist key is set, native .waitlist-form; else Tally embed, else local demo. */
+   Waitlist: native .waitlist-form when the waitlist key is set; otherwise a local demo (no email send).
+   Spam: hCaptcha (see https://docs.web3forms.com/getting-started/customizations/spam-protection/hcaptcha)
+   plus honeypot `botcheck` + `company_website`. Load order: this file, then https://web3forms.com/client/script.js
+   so .h-captcha is in the DOM before the client initializes widgets. */
 
 var WEB3FORMS_ACCESS_KEY_WAITLIST = '948661db-1093-432d-8599-97b2044eb87d';
 var WEB3FORMS_ACCESS_KEY_PARTNER = '948661db-1093-432d-8599-97b2044eb87d';
-var TALLY_WAITLIST_ID = 'xX0J7k';
 
 function web3formsWaitlistReady() {
   return (
@@ -19,13 +20,23 @@ function web3formsPartnerReady() {
     WEB3FORMS_ACCESS_KEY_PARTNER.indexOf('YOUR_WEB3FORMS_PARTNER') === -1
   );
 }
-function tallyWaitlistReady() {
-  return TALLY_WAITLIST_ID && TALLY_WAITLIST_ID.indexOf('YOUR_WAITLIST_') === -1;
+function getWeb3FormsHCaptchaResponse(form) {
+  var ta = form.querySelector('textarea[name="h-captcha-response"]');
+  if (!ta || !ta.value) return '';
+  return String(ta.value);
 }
-function buildTallyWaitlistSrc() {
-  if (!tallyWaitlistReady()) return '';
-  return 'https://tally.so/embed/' + encodeURIComponent(TALLY_WAITLIST_ID) +
-    '?alignLeft=1&hideTitle=1&dynamicHeight=1&transparentBackground=1';
+function hasWeb3FormsHCaptchaResponse(form) {
+  return getWeb3FormsHCaptchaResponse(form) !== '';
+}
+
+/** Returns true if honeypot fields suggest a bot (do not submit). */
+function isLikelyBot(form) {
+  if (!form) return true;
+  var trap = form.querySelector('input[name="botcheck"]');
+  if (trap && trap.checked) return true;
+  var extra = form.querySelector('input[name="company_website"]');
+  if (extra && (extra.value || '').trim() !== '') return true;
+  return false;
 }
 function setWaitlistError(wrap, message) {
   var err = wrap.querySelector('.form-error');
@@ -39,7 +50,7 @@ function setWaitlistError(wrap, message) {
   }
 }
 function setWaitlistSuccess(wrap) {
-  var embed = wrap.querySelector('.tally-embed-wrap');
+  var embed = wrap.querySelector('.waitlist-box');
   var form = wrap.querySelector('.waitlist-form');
   var success = wrap.querySelector('.form-success');
   setWaitlistError(wrap, '');
@@ -54,6 +65,10 @@ function setWaitlistSuccess(wrap) {
   }
 }
 function submitToWeb3Forms(wrap, form) {
+  if (!hasWeb3FormsHCaptchaResponse(form)) {
+    setWaitlistError(wrap, 'Please complete the security check first.');
+    return;
+  }
   var input = form.querySelector('input[type="email"]');
   var email = (input && input.value) || '';
   if (!email) return;
@@ -73,6 +88,8 @@ function submitToWeb3Forms(wrap, form) {
       email: email,
       subject: 'Klipa — waitlist signup',
       from_name: 'Klipa website',
+      botcheck: false,
+      'h-captcha-response': getWeb3FormsHCaptchaResponse(form),
     }),
   })
     .then(function (r) { return r.json(); })
@@ -98,11 +115,11 @@ function submitToWeb3Forms(wrap, form) {
     });
 }
 function initNativeWaitlist() {
-  var wraps = document.querySelectorAll('[data-klipa-tally-waitlist]');
+  var wraps = document.querySelectorAll('[data-klipa-waitlist]');
   wraps.forEach(function (wrap) {
     wrap.classList.add('waitlist-embed--native');
-    var box = wrap.querySelector('.tally-embed-wrap');
-    var which = wrap.getAttribute('data-klipa-tally-waitlist');
+    var box = wrap.querySelector('.waitlist-box');
+    var which = wrap.getAttribute('data-klipa-waitlist');
     if (!box) return;
     var tpl = document.getElementById('klipa-waitlist-fallback-' + which);
     if (tpl && tpl.content) {
@@ -113,8 +130,15 @@ function initNativeWaitlist() {
     if (fr) {
       fr.addEventListener('submit', function (e) {
         e.preventDefault();
+        if (isLikelyBot(fr)) {
+          return;
+        }
         if (!fr.checkValidity()) {
           fr.reportValidity();
+          return;
+        }
+        if (!hasWeb3FormsHCaptchaResponse(fr)) {
+          setWaitlistError(wrap, 'Please complete the security check first.');
           return;
         }
         submitToWeb3Forms(wrap, fr);
@@ -122,49 +146,12 @@ function initNativeWaitlist() {
     }
   });
 }
-function initTallyWaitlistIframes() {
-  var src = buildTallyWaitlistSrc();
-  if (!src) return;
-  var wraps = document.querySelectorAll('[data-klipa-tally-waitlist]');
-  wraps.forEach(function (wrap) {
-    var box = wrap.querySelector('.tally-embed-wrap');
-    if (box) {
-      box.innerHTML = '';
-      var iframe = document.createElement('iframe');
-      iframe.className = 'tally-iframe';
-      iframe.title = 'Join the Klipa waitlist';
-      iframe.setAttribute('loading', 'lazy');
-      iframe.setAttribute('src', src);
-      box.appendChild(iframe);
-    }
-  });
-  window.addEventListener('message', function (e) {
-    if (e.origin !== 'https://tally.so' || !e.data) {
-      return;
-    }
-    var d = e.data;
-    if (typeof d === 'string') {
-      try { d = JSON.parse(d); } catch (x) { return; }
-    }
-    if (!d || d.event !== 'Tally.FormSubmitted') {
-      return;
-    }
-    var iframes = document.querySelectorAll('iframe.tally-iframe');
-    for (var i = 0; i < iframes.length; i++) {
-      if (iframes[i].contentWindow === e.source) {
-        var w = iframes[i].closest('[data-klipa-tally-waitlist]');
-        if (w) setWaitlistSuccess(w);
-        return;
-      }
-    }
-  });
-}
 function initLocalDemoWaitlist() {
-  var wraps = document.querySelectorAll('[data-klipa-tally-waitlist]');
+  var wraps = document.querySelectorAll('[data-klipa-waitlist]');
   wraps.forEach(function (wrap) {
     wrap.classList.add('waitlist-embed--native');
-    var box = wrap.querySelector('.tally-embed-wrap');
-    var which = wrap.getAttribute('data-klipa-tally-waitlist');
+    var box = wrap.querySelector('.waitlist-box');
+    var which = wrap.getAttribute('data-klipa-waitlist');
     if (!box) return;
     var tpl = document.getElementById('klipa-waitlist-fallback-' + which);
     if (tpl && tpl.content) {
@@ -175,8 +162,15 @@ function initLocalDemoWaitlist() {
     if (fr) {
       fr.addEventListener('submit', function (e) {
         e.preventDefault();
+        if (isLikelyBot(fr)) {
+          return;
+        }
         if (!fr.checkValidity()) {
           fr.reportValidity();
+          return;
+        }
+        if (!hasWeb3FormsHCaptchaResponse(fr)) {
+          setWaitlistError(wrap, 'Please complete the security check first.');
           return;
         }
         setWaitlistSuccess(wrap);
@@ -187,10 +181,6 @@ function initLocalDemoWaitlist() {
 function initWaitlist() {
   if (web3formsWaitlistReady()) {
     initNativeWaitlist();
-    return;
-  }
-  if (tallyWaitlistReady()) {
-    initTallyWaitlistIframes();
     return;
   }
   initLocalDemoWaitlist();
@@ -240,6 +230,11 @@ function openPartnerDialog() {
   }
   resetPartnerDialog();
   d.showModal();
+  setTimeout(function () {
+    try {
+      window.dispatchEvent(new Event('resize'));
+    } catch (e) { /* */ }
+  }, 0);
   var nameInput = document.getElementById('partner-name');
   if (nameInput) {
     setTimeout(function () { nameInput.focus(); }, 0);
@@ -248,8 +243,16 @@ function openPartnerDialog() {
 function submitPartnerForm(e) {
   e.preventDefault();
   var form = e.target;
+  if (isLikelyBot(form)) {
+    setPartnerError('Unable to send. If you are human, refresh the page and try again.');
+    return;
+  }
   if (!form.checkValidity()) {
     form.reportValidity();
+    return;
+  }
+  if (!hasWeb3FormsHCaptchaResponse(form)) {
+    setPartnerError('Please complete the security check first.');
     return;
   }
   var name = (document.getElementById('partner-name').value || '').trim();
@@ -277,6 +280,8 @@ function submitPartnerForm(e) {
     Role: role,
     phone: phone || '—',
     message: messageBody,
+    botcheck: false,
+    'h-captcha-response': getWeb3FormsHCaptchaResponse(form),
   };
   fetch('https://api.web3forms.com/submit', {
     method: 'POST',
