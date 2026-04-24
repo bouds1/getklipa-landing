@@ -308,11 +308,8 @@
         <input type="checkbox" name="botcheck" class="form-hp" tabindex="-1" autocomplete="off" />
         <input type="text" class="form-hp" name="company_website" tabindex="-1" autocomplete="off" value="" />
       </div>
-      <div class="waitlist-form-row">
-        <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
-        <button type="submit" class="btn">Join the waitlist</button>
-      </div>
-      <div class="h-captcha" data-captcha="true" data-size="compact"></div>
+      <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
+      <button type="submit" class="btn">Join the waitlist</button>
     </form>
   </template>
   <template id="klipa-waitlist-fallback-cta">
@@ -321,11 +318,8 @@
         <input type="checkbox" name="botcheck" class="form-hp" tabindex="-1" autocomplete="off" />
         <input type="text" class="form-hp" name="company_website" tabindex="-1" autocomplete="off" value="" />
       </div>
-      <div class="waitlist-form-row">
-        <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
-        <button type="submit">Join</button>
-      </div>
-      <div class="h-captcha" data-captcha="true" data-size="compact"></div>
+      <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
+      <button type="submit">Join</button>
     </form>
   </template>
 
@@ -373,9 +367,6 @@
               aria-label="Message (optional)"
             ></textarea>
           </div>
-          <div class="partner-hcaptcha">
-            <div class="h-captcha" data-captcha="true" data-size="normal"></div>
-          </div>
           <p class="partner-dialog-error" id="partner-dialog-error" hidden role="alert"></p>
           <div class="partner-dialog-actions">
             <button type="button" class="btn btn-secondary" id="partner-form-cancel">Cancel</button>
@@ -391,6 +382,5 @@
   </dialog>
 
   <script src="/scripts/main.js" defer></script>
-  <script src="https://web3forms.com/client/script.js" defer></script>
 </body>
 </html>

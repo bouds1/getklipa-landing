@@ -115,20 +115,11 @@
   }
   .waitlist-form {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 480px;
+    display: flex; gap: 6px; max-width: 480px;
     margin: 0;
     background: var(--white); padding: 6px;
     border-radius: 10px; border: 0.5px solid var(--border);
   }
-  .waitlist-form-row {
-    display: flex;
-    gap: 6px;
-    align-items: stretch;
-  }
-  .waitlist-form .h-captcha { display: flex; justify-content: center; min-height: 1px; }
   .form-hp-wrap {
     position: absolute;
     left: -9999px;
@@ -139,14 +130,14 @@
     pointer-events: none;
   }
   .partner-dialog-form { position: relative; }
-  .waitlist-form-row input {
+  .waitlist-form input {
     flex: 1; border: none; padding: 10px 14px;
     font-size: 15px; background: transparent; outline: none;
     color: var(--ink); font-family: inherit;
   }
-  .waitlist-form-row input::placeholder { color: var(--muted); }
-  .waitlist-form-row input:focus { outline: 2px solid var(--orange); outline-offset: 0; border-radius: 4px; }
-  .waitlist-form-row button {
+  .waitlist-form input::placeholder { color: var(--muted); }
+  .waitlist-form input:focus { outline: 2px solid var(--orange); outline-offset: 0; border-radius: 4px; }
+  .waitlist-form button {
     white-space: nowrap; padding: 10px 18px;
     border-radius: 6px; font-size: 14px;
   }
@@ -269,13 +260,13 @@
   .cta p.sub { font-size: 16px; color: rgba(255,255,255,0.9); margin-bottom: 32px; max-width: 460px; margin-left: auto; margin-right: auto; }
   .cta .waitlist-box { background: var(--white); border: none; }
   .cta .waitlist-form { background: var(--white); border: none; }
-  .cta .waitlist-form-row button {
+  .cta .waitlist-form button {
     background: var(--ink);
     color: var(--white);
     font-weight: 500;
     border: none;
   }
-  .cta .waitlist-form-row button:hover { background: #000; color: var(--white); }
+  .cta .waitlist-form button:hover { background: #000; color: var(--white); }
   .cta .form-success { color: rgba(255,255,255,0.95); }
   .cta .form-error { color: #ffe0d4; }
   .cta .form-note { color: rgba(255,255,255,0.88); margin-bottom: 24px; }
@@ -385,8 +376,6 @@
     border: 0.5px solid var(--border); border-radius: 8px;
   }
   .partner-field textarea { min-height: 100px; resize: vertical; }
-  .partner-hcaptcha { margin: 0 0 4px; }
-  .partner-hcaptcha .h-captcha { display: flex; justify-content: flex-start; }
   .partner-field input:focus,
   .partner-field textarea:focus { outline: 2px solid var(--orange); outline-offset: 0; border-color: transparent; }
   .partner-dialog-error[hidden] { display: none; }
@@ -447,9 +436,8 @@
     .hero { padding: 56px 0 48px; }
     .hero h1 { font-size: 34px; letter-spacing: -0.9px; }
     .hero-sub { font-size: 15px; }
-    .waitlist-form { padding: 8px; }
-    .waitlist-form-row { flex-direction: column; }
-    .waitlist-form-row button { width: 100%; padding: 12px; }
+    .waitlist-form { flex-direction: column; padding: 8px; }
+    .waitlist-form button { width: 100%; padding: 12px; }
     section { padding: 56px 0; }
     .section-head h2 { font-size: 26px; }
     .deal-card, .deal-callouts { padding-left: 18px; padding-right: 18px; }

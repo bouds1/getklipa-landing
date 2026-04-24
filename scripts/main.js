@@ -1,9 +1,9 @@
 /* Web3Forms: waitlist and partner/retailer use different forms (two access keys; set per env on getklipa.com).
    Get or rotate at https://web3forms.com
    Waitlist: native .waitlist-form when the waitlist key is set; otherwise a local demo (no email send).
-   Spam: hCaptcha (see https://docs.web3forms.com/getting-started/customizations/spam-protection/hcaptcha)
-   plus honeypot `botcheck` + `company_website`. Load order: this file, then https://web3forms.com/client/script.js
-   so .h-captcha is in the DOM before the client initializes widgets. */
+   Spam (passive only; no user-facing challenge): client honeypots `botcheck` + `company_website`, JSON `botcheck: false`,
+   and Web3Forms’ server-side checks. In the app.webforms.com dashboard, turn hCaptcha (and any captcha) off for these
+   forms or the API will expect a token you are not sending. */
 
 var WEB3FORMS_ACCESS_KEY_WAITLIST = '948661db-1093-432d-8599-97b2044eb87d';
 var WEB3FORMS_ACCESS_KEY_PARTNER = '948661db-1093-432d-8599-97b2044eb87d';
@@ -20,15 +20,6 @@ function web3formsPartnerReady() {
     WEB3FORMS_ACCESS_KEY_PARTNER.indexOf('YOUR_WEB3FORMS_PARTNER') === -1
   );
 }
-function getWeb3FormsHCaptchaResponse(form) {
-  var ta = form.querySelector('textarea[name="h-captcha-response"]');
-  if (!ta || !ta.value) return '';
-  return String(ta.value);
-}
-function hasWeb3FormsHCaptchaResponse(form) {
-  return getWeb3FormsHCaptchaResponse(form) !== '';
-}
-
 /** Returns true if honeypot fields suggest a bot (do not submit). */
 function isLikelyBot(form) {
   if (!form) return true;
@@ -65,10 +56,6 @@ function setWaitlistSuccess(wrap) {
   }
 }
 function submitToWeb3Forms(wrap, form) {
-  if (!hasWeb3FormsHCaptchaResponse(form)) {
-    setWaitlistError(wrap, 'Please complete the security check first.');
-    return;
-  }
   var input = form.querySelector('input[type="email"]');
   var email = (input && input.value) || '';
   if (!email) return;
@@ -89,7 +76,6 @@ function submitToWeb3Forms(wrap, form) {
       subject: 'Klipa — waitlist signup',
       from_name: 'Klipa website',
       botcheck: false,
-      'h-captcha-response': getWeb3FormsHCaptchaResponse(form),
     }),
   })
     .then(function (r) { return r.json(); })
@@ -137,10 +123,6 @@ function initNativeWaitlist() {
           fr.reportValidity();
           return;
         }
-        if (!hasWeb3FormsHCaptchaResponse(fr)) {
-          setWaitlistError(wrap, 'Please complete the security check first.');
-          return;
-        }
         submitToWeb3Forms(wrap, fr);
       });
     }
@@ -167,10 +149,6 @@ function initLocalDemoWaitlist() {
         }
         if (!fr.checkValidity()) {
           fr.reportValidity();
-          return;
-        }
-        if (!hasWeb3FormsHCaptchaResponse(fr)) {
-          setWaitlistError(wrap, 'Please complete the security check first.');
           return;
         }
         setWaitlistSuccess(wrap);
@@ -230,11 +208,6 @@ function openPartnerDialog() {
   }
   resetPartnerDialog();
   d.showModal();
-  setTimeout(function () {
-    try {
-      window.dispatchEvent(new Event('resize'));
-    } catch (e) { /* */ }
-  }, 0);
   var nameInput = document.getElementById('partner-name');
   if (nameInput) {
     setTimeout(function () { nameInput.focus(); }, 0);
@@ -249,10 +222,6 @@ function submitPartnerForm(e) {
   }
   if (!form.checkValidity()) {
     form.reportValidity();
-    return;
-  }
-  if (!hasWeb3FormsHCaptchaResponse(form)) {
-    setPartnerError('Please complete the security check first.');
     return;
   }
   var name = (document.getElementById('partner-name').value || '').trim();
@@ -281,7 +250,6 @@ function submitPartnerForm(e) {
     phone: phone || '—',
     message: messageBody,
     botcheck: false,
-    'h-captcha-response': getWeb3FormsHCaptchaResponse(form),
   };
   fetch('https://api.web3forms.com/submit', {
     method: 'POST',
