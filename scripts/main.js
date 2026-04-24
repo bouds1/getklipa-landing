@@ -1,9 +1,10 @@
-/* Web3Forms: waitlist and partner/retailer use different forms (two access keys).
+/* Web3Forms: waitlist and partner/retailer use different forms (two access keys; set per env on getklipa.com).
    Get or rotate at https://web3forms.com
+   Current values: shared test key; replace each with its production form key before/after domain deploy.
    Waitlist: if waitlist key is set, native .waitlist-form; else Tally embed, else local demo. */
 
-var WEB3FORMS_ACCESS_KEY_WAITLIST = '1ae9095b-e0ba-4972-ac49-ebb424cb9621';
-var WEB3FORMS_ACCESS_KEY_PARTNER = 'a2b89b0c-d572-445e-9dd7-2c0b74031b5f';
+var WEB3FORMS_ACCESS_KEY_WAITLIST = '948661db-1093-432d-8599-97b2044eb87d';
+var WEB3FORMS_ACCESS_KEY_PARTNER = '948661db-1093-432d-8599-97b2044eb87d';
 var TALLY_WAITLIST_ID = 'xX0J7k';
 
 function web3formsWaitlistReady() {
