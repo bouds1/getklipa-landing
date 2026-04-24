@@ -1,22 +1,47 @@
-/* Replace with your Tally form public IDs (tally.so → form → share → public ID). */
-var TALLY_WAITLIST_ID = 'YOUR_WAITLIST_TALLY_ID';
-var TALLY_PARTNER_ID = 'YOUR_PARTNER_TALLY_ID';
+/* Web3Forms: waitlist and partner/retailer use different forms (two access keys).
+   Get or rotate at https://web3forms.com
+   Waitlist: if waitlist key is set, native .waitlist-form; else Tally embed, else local demo. */
 
+var WEB3FORMS_ACCESS_KEY_WAITLIST = '1ae9095b-e0ba-4972-ac49-ebb424cb9621';
+var WEB3FORMS_ACCESS_KEY_PARTNER = 'a2b89b0c-d572-445e-9dd7-2c0b74031b5f';
+var TALLY_WAITLIST_ID = 'xX0J7k';
+
+function web3formsWaitlistReady() {
+  return (
+    WEB3FORMS_ACCESS_KEY_WAITLIST &&
+    WEB3FORMS_ACCESS_KEY_WAITLIST.indexOf('YOUR_WEB3FORMS_WAITLIST') === -1
+  );
+}
+function web3formsPartnerReady() {
+  return (
+    WEB3FORMS_ACCESS_KEY_PARTNER &&
+    WEB3FORMS_ACCESS_KEY_PARTNER.indexOf('YOUR_WEB3FORMS_PARTNER') === -1
+  );
+}
 function tallyWaitlistReady() {
   return TALLY_WAITLIST_ID && TALLY_WAITLIST_ID.indexOf('YOUR_WAITLIST_') === -1;
-}
-function tallyPartnerReady() {
-  return TALLY_PARTNER_ID && TALLY_PARTNER_ID.indexOf('YOUR_PARTNER_') === -1;
 }
 function buildTallyWaitlistSrc() {
   if (!tallyWaitlistReady()) return '';
   return 'https://tally.so/embed/' + encodeURIComponent(TALLY_WAITLIST_ID) +
     '?alignLeft=1&hideTitle=1&dynamicHeight=1&transparentBackground=1';
 }
+function setWaitlistError(wrap, message) {
+  var err = wrap.querySelector('.form-error');
+  if (!err) return;
+  if (message) {
+    err.textContent = message;
+    err.hidden = false;
+  } else {
+    err.textContent = '';
+    err.hidden = true;
+  }
+}
 function setWaitlistSuccess(wrap) {
   var embed = wrap.querySelector('.tally-embed-wrap');
   var form = wrap.querySelector('.waitlist-form');
   var success = wrap.querySelector('.form-success');
+  setWaitlistError(wrap, '');
   if (embed) embed.hidden = true;
   if (form) {
     var p = form.parentNode;
@@ -27,38 +52,100 @@ function setWaitlistSuccess(wrap) {
     success.textContent = "You're on the list. We'll be in touch.";
   }
 }
-function initWaitlistEmbeds() {
+function submitToWeb3Forms(wrap, form) {
+  var input = form.querySelector('input[type="email"]');
+  var email = (input && input.value) || '';
+  if (!email) return;
+  var btn = form.querySelector('button[type="submit"]');
+  if (btn) {
+    btn.disabled = true;
+    var prev = btn.getAttribute('data-prev-label') || btn.textContent;
+    btn.setAttribute('data-prev-label', prev);
+    btn.textContent = '…';
+  }
+  setWaitlistError(wrap, '');
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      access_key: WEB3FORMS_ACCESS_KEY_WAITLIST,
+      email: email,
+      subject: 'Klipa — waitlist signup',
+      from_name: 'Klipa website',
+    }),
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data && data.success) {
+        setWaitlistSuccess(wrap);
+      } else {
+        setWaitlistError(
+          wrap,
+          (data && data.message) || 'Something went wrong. Please try again.'
+        );
+      }
+    })
+    .catch(function () {
+      setWaitlistError(wrap, 'Network error. Please try again.');
+    })
+    .finally(function () {
+      if (btn) {
+        btn.disabled = false;
+        var l = btn.getAttribute('data-prev-label');
+        if (l) btn.textContent = l;
+      }
+    });
+}
+function initNativeWaitlist() {
+  var wraps = document.querySelectorAll('[data-klipa-tally-waitlist]');
+  wraps.forEach(function (wrap) {
+    wrap.classList.add('waitlist-embed--native');
+    var box = wrap.querySelector('.tally-embed-wrap');
+    var which = wrap.getAttribute('data-klipa-tally-waitlist');
+    if (!box) return;
+    var tpl = document.getElementById('klipa-waitlist-fallback-' + which);
+    if (tpl && tpl.content) {
+      box.innerHTML = '';
+      box.appendChild(tpl.content.cloneNode(true));
+    }
+    var fr = box.querySelector('.waitlist-form');
+    if (fr) {
+      fr.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!fr.checkValidity()) {
+          fr.reportValidity();
+          return;
+        }
+        submitToWeb3Forms(wrap, fr);
+      });
+    }
+  });
+}
+function initTallyWaitlistIframes() {
   var src = buildTallyWaitlistSrc();
+  if (!src) return;
   var wraps = document.querySelectorAll('[data-klipa-tally-waitlist]');
   wraps.forEach(function (wrap) {
     var box = wrap.querySelector('.tally-embed-wrap');
-    var which = wrap.getAttribute('data-klipa-tally-waitlist');
-    if (src) {
+    if (box) {
+      box.innerHTML = '';
       var iframe = document.createElement('iframe');
       iframe.className = 'tally-iframe';
       iframe.title = 'Join the Klipa waitlist';
       iframe.setAttribute('loading', 'lazy');
       iframe.setAttribute('src', src);
-      if (box) {
-        box.innerHTML = '';
-        box.appendChild(iframe);
-      }
-    } else {
-      var tpl = document.getElementById('klipa-waitlist-fallback-' + which);
-      if (box && tpl && tpl.content) {
-        box.appendChild(tpl.content.cloneNode(true));
-        var fr = box.querySelector('.waitlist-form');
-        if (fr) {
-          fr.addEventListener('submit', function (e) {
-            e.preventDefault();
-            setWaitlistSuccess(wrap);
-          });
-        }
-      }
+      box.appendChild(iframe);
     }
   });
   window.addEventListener('message', function (e) {
-    if (e.origin !== 'https://tally.so' || !e.data || e.data.event !== 'Tally.FormSubmitted') {
+    if (e.origin !== 'https://tally.so' || !e.data) {
+      return;
+    }
+    var d = e.data;
+    if (typeof d === 'string') {
+      try { d = JSON.parse(d); } catch (x) { return; }
+    }
+    if (!d || d.event !== 'Tally.FormSubmitted') {
       return;
     }
     var iframes = document.querySelectorAll('iframe.tally-iframe');
@@ -71,21 +158,185 @@ function initWaitlistEmbeds() {
     }
   });
 }
-function initPartnerCta() {
-  var btn = document.getElementById('partner-cta');
-  if (!btn) return;
-  if (!tallyPartnerReady()) {
-    btn.disabled = true;
-    btn.setAttribute('title', 'Set TALLY_PARTNER_ID in scripts/main.js to enable.');
+function initLocalDemoWaitlist() {
+  var wraps = document.querySelectorAll('[data-klipa-tally-waitlist]');
+  wraps.forEach(function (wrap) {
+    wrap.classList.add('waitlist-embed--native');
+    var box = wrap.querySelector('.tally-embed-wrap');
+    var which = wrap.getAttribute('data-klipa-tally-waitlist');
+    if (!box) return;
+    var tpl = document.getElementById('klipa-waitlist-fallback-' + which);
+    if (tpl && tpl.content) {
+      box.innerHTML = '';
+      box.appendChild(tpl.content.cloneNode(true));
+    }
+    var fr = box.querySelector('.waitlist-form');
+    if (fr) {
+      fr.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!fr.checkValidity()) {
+          fr.reportValidity();
+          return;
+        }
+        setWaitlistSuccess(wrap);
+      });
+    }
+  });
+}
+function initWaitlist() {
+  if (web3formsWaitlistReady()) {
+    initNativeWaitlist();
     return;
   }
-  btn.addEventListener('click', function (e) {
+  if (tallyWaitlistReady()) {
+    initTallyWaitlistIframes();
+    return;
+  }
+  initLocalDemoWaitlist();
+}
+function resetPartnerDialog() {
+  var form = document.getElementById('partner-inquiry-form');
+  var err = document.getElementById('partner-dialog-error');
+  var success = document.getElementById('partner-dialog-success');
+  if (form) {
+    form.reset();
+    form.hidden = false;
+  }
+  if (err) {
+    err.textContent = '';
+    err.hidden = true;
+  }
+  if (success) success.hidden = true;
+}
+function setPartnerError(msg) {
+  var el = document.getElementById('partner-dialog-error');
+  if (!el) return;
+  if (msg) {
+    el.textContent = msg;
+    el.hidden = false;
+  } else {
+    el.textContent = '';
+    el.hidden = true;
+  }
+}
+function showPartnerSuccess() {
+  var form = document.getElementById('partner-inquiry-form');
+  var success = document.getElementById('partner-dialog-success');
+  var closeOk = document.getElementById('partner-success-close');
+  if (form) form.hidden = true;
+  if (success) success.hidden = false;
+  setPartnerError('');
+  if (closeOk) {
+    setTimeout(function () { closeOk.focus(); }, 0);
+  }
+}
+function openPartnerDialog() {
+  if (!web3formsPartnerReady()) return;
+  var d = document.getElementById('partner-dialog');
+  if (!d) return;
+  if (typeof d.showModal !== 'function') {
+    return;
+  }
+  resetPartnerDialog();
+  d.showModal();
+  var nameInput = document.getElementById('partner-name');
+  if (nameInput) {
+    setTimeout(function () { nameInput.focus(); }, 0);
+  }
+}
+function submitPartnerForm(e) {
+  e.preventDefault();
+  var form = e.target;
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+  var name = (document.getElementById('partner-name').value || '').trim();
+  var store = (document.getElementById('partner-store').value || '').trim();
+  var role = (document.getElementById('partner-role').value || '').trim();
+  var email = (document.getElementById('partner-email').value || '').trim();
+  var phone = (document.getElementById('partner-phone').value || '').trim();
+  var messageBody = (document.getElementById('partner-message').value || '').trim();
+  var submitBtn = document.getElementById('partner-form-submit');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    var prev = submitBtn.getAttribute('data-prev-label') || submitBtn.textContent;
+    submitBtn.setAttribute('data-prev-label', prev);
+    submitBtn.textContent = 'Sending…';
+  }
+  setPartnerError('');
+  /* Web3Forms forwards custom JSON keys to your inbox as separate fields (see
+     https://docs.web3forms.com/getting-started/api-reference). */
+  var partnerPayload = {
+    access_key: WEB3FORMS_ACCESS_KEY_PARTNER,
+    subject: 'Klipa — Partner one-pager request',
+    name: name,
+    email: email,
+    'Store or chain': store,
+    Role: role,
+    phone: phone || '—',
+    message: messageBody,
+  };
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(partnerPayload),
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data && data.success) {
+        showPartnerSuccess();
+      } else {
+        setPartnerError(
+          (data && data.message) || 'Something went wrong. Please try again.'
+        );
+      }
+    })
+    .catch(function () {
+      setPartnerError(
+        'Network error. Please try again or email jake@getklipa.com.'
+      );
+    })
+    .finally(function () {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        var l = submitBtn.getAttribute('data-prev-label');
+        if (l) submitBtn.textContent = l;
+      }
+    });
+}
+function initPartnerCta() {
+  var openBtn = document.getElementById('partner-cta');
+  var dialog = document.getElementById('partner-dialog');
+  var surface = document.getElementById('partner-dialog-surface');
+  var form = document.getElementById('partner-inquiry-form');
+  if (!openBtn || !dialog) return;
+  if (!web3formsPartnerReady()) {
+    openBtn.disabled = true;
+    openBtn.setAttribute('title', 'Set WEB3FORMS_ACCESS_KEY_PARTNER in scripts/main.js to enable partner requests.');
+    return;
+  }
+  openBtn.addEventListener('click', function (e) {
     e.preventDefault();
-    if (window.Tally && typeof window.Tally.openPopup === 'function') {
-      window.Tally.openPopup(TALLY_PARTNER_ID, { width: 520 });
-    } else {
-      window.open('https://tally.so/r/' + encodeURIComponent(TALLY_PARTNER_ID), '_blank', 'noopener,noreferrer');
-    }
+    openPartnerDialog();
+  });
+  if (surface) {
+    surface.addEventListener('click', function (e) {
+      if (e.target === surface) {
+        dialog.close();
+      }
+    });
+  }
+  var closeEl = document.getElementById('partner-dialog-close');
+  var cancelEl = document.getElementById('partner-form-cancel');
+  var successClose = document.getElementById('partner-success-close');
+  if (closeEl) closeEl.addEventListener('click', function () { dialog.close(); });
+  if (cancelEl) cancelEl.addEventListener('click', function () { dialog.close(); });
+  if (successClose) successClose.addEventListener('click', function () { dialog.close(); });
+  if (form) form.addEventListener('submit', submitPartnerForm);
+  dialog.addEventListener('close', function () {
+    resetPartnerDialog();
+    if (openBtn) openBtn.focus();
   });
 }
 
@@ -169,7 +420,7 @@ function initPartnerCta() {
 })();
 
 function initKlipaForms() {
-  initWaitlistEmbeds();
+  initWaitlist();
   initPartnerCta();
 }
 if (document.readyState === 'loading') {

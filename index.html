@@ -53,6 +53,7 @@
         aria-label="Join the Klipa waitlist"
       >
         <div class="tally-embed-wrap"></div>
+        <p class="form-error" hidden role="alert"></p>
         <p class="form-success" hidden role="status">You're on the list. We'll be in touch.</p>
       </div>
       <p class="form-note">We'll let you know when we're ready. Move up the list by sharing.</p>
@@ -177,10 +178,20 @@
         aria-label="Join the Klipa waitlist"
       >
         <div class="tally-embed-wrap"></div>
+        <p class="form-error" hidden role="alert"></p>
         <p class="form-success" hidden role="status">You're on the list. We'll be in touch.</p>
       </div>
       <p class="form-note">Refer a friend to move up the list.</p>
-      <p class="socials"><span class="handle">@getklipa</span> on Instagram · TikTok · X</p>
+      <p class="socials">
+        <span class="handle">@getklipa</span> on
+        <a href="https://www.instagram.com/getklipa/" rel="me noopener noreferrer" target="_blank">Instagram</a>
+        ·
+        <a href="https://www.facebook.com/profile.php?id=61579403832515" rel="me noopener noreferrer" target="_blank">Facebook</a>
+        ·
+        <a href="https://www.tiktok.com/@getklipa" rel="me noopener noreferrer" target="_blank">TikTok</a>
+        ·
+        <a href="https://x.com/getklipa" rel="me noopener noreferrer" target="_blank">X</a>
+      </p>
     </div>
   </section>
 
@@ -272,9 +283,10 @@
         </div>
         <div class="footer-col">
           <h5>Social</h5>
-          <p><a href="#" aria-label="Instagram">@getklipa · Instagram</a></p>
-          <p><a href="#" aria-label="TikTok">@getklipa · TikTok</a></p>
-          <p><a href="#" aria-label="X">@getklipa · X</a></p>
+        <p><a href="https://www.instagram.com/getklipa/" rel="me noopener noreferrer" target="_blank" aria-label="Klipa on Instagram">@getklipa · Instagram</a></p>
+        <p><a href="https://www.facebook.com/profile.php?id=61579403832515" rel="me noopener noreferrer" target="_blank" aria-label="Klipa on Facebook">@getklipa · Facebook</a></p>
+        <p><a href="https://www.tiktok.com/@getklipa" rel="me noopener noreferrer" target="_blank" aria-label="Klipa on TikTok">@getklipa · TikTok</a></p>
+        <p><a href="https://x.com/getklipa" rel="me noopener noreferrer" target="_blank" aria-label="Klipa on X">@getklipa · X</a></p>
         </div>
       </div>
       <div class="footer-bottom">
@@ -296,6 +308,60 @@
       <button type="submit">Join</button>
     </form>
   </template>
+
+  <dialog class="partner-dialog" id="partner-dialog" aria-labelledby="partner-dialog-title">
+    <div class="partner-dialog-surface" id="partner-dialog-surface">
+      <div class="partner-dialog-panel" role="document">
+        <div class="partner-dialog-head">
+          <h2 id="partner-dialog-title">Request a partner one-pager</h2>
+          <button type="button" class="partner-dialog-x" id="partner-dialog-close" aria-label="Close">×</button>
+        </div>
+        <p class="partner-dialog-lead">We’ll follow up with a one-pager and next steps. All fields are required except phone and message (both optional).</p>
+        <form class="partner-dialog-form" id="partner-inquiry-form" novalidate>
+          <div class="partner-field">
+            <label for="partner-name">Your name</label>
+            <input type="text" id="partner-name" name="name" autocomplete="name" required />
+          </div>
+          <div class="partner-field">
+            <label for="partner-store">Store or chain</label>
+            <input type="text" id="partner-store" name="store" autocomplete="organization" required />
+          </div>
+          <div class="partner-field">
+            <label for="partner-role">Your role</label>
+            <input type="text" id="partner-role" name="role" autocomplete="organization-title" required />
+          </div>
+          <div class="partner-field">
+            <label for="partner-email">Work email</label>
+            <input type="email" id="partner-email" name="email" autocomplete="email" inputmode="email" required />
+          </div>
+          <div class="partner-field">
+            <label for="partner-phone">Phone <span class="optional">(optional)</span></label>
+            <input type="tel" id="partner-phone" name="phone" autocomplete="tel" inputmode="tel" />
+          </div>
+          <div class="partner-field">
+            <label for="partner-message">Message <span class="optional">(optional)</span></label>
+            <textarea
+              id="partner-message"
+              name="inquiry"
+              rows="4"
+              autocomplete="off"
+              placeholder="Anything we should know about your store, timing, or questions you have"
+              aria-label="Message (optional)"
+            ></textarea>
+          </div>
+          <p class="partner-dialog-error" id="partner-dialog-error" hidden role="alert"></p>
+          <div class="partner-dialog-actions">
+            <button type="button" class="btn btn-secondary" id="partner-form-cancel">Cancel</button>
+            <button type="submit" class="btn" id="partner-form-submit">Send request</button>
+          </div>
+        </form>
+        <div class="partner-dialog-success" id="partner-dialog-success" hidden>
+          <p>Thanks — we got your request and will be in touch soon.</p>
+          <button type="button" class="btn" id="partner-success-close">Close</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
 
   <script src="https://tally.so/widgets/embed.js" defer></script>
   <script src="/scripts/main.js" defer></script>
