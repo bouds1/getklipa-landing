@@ -1,9 +1,1 @@
-.DS_Store
-.env
-.env.*
-*.local
-
-# Local planning / context (not for the public repo)
-klipa_context.md
-klipa_execution_plan.md
-klipa_project_plan.md
+private/
