@@ -394,6 +394,56 @@
   .partner-dialog-success { text-align: center; }
   .partner-dialog-success p { font-size: 15px; color: var(--body); margin: 0 0 20px; line-height: 1.55; }
 
+  /* LEGAL */
+  .legal-page {
+    background: var(--surface);
+    padding: 72px 0;
+  }
+  .legal-card {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px;
+    background: var(--white);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+  }
+  .legal-card .eyebrow {
+    font-size: 11px; letter-spacing: 2px; color: var(--orange);
+    text-transform: uppercase; font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .legal-card h1 {
+    font-size: 42px; font-weight: 500; line-height: 1.12;
+    color: var(--ink); letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+  .legal-updated {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+  .legal-card h2 {
+    font-size: 21px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.3px;
+    margin: 32px 0 10px;
+  }
+  .legal-card p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--body);
+    margin-bottom: 14px;
+  }
+  .legal-card a {
+    color: var(--orange);
+    text-decoration: underline;
+    text-decoration-color: var(--orange-tint-border);
+    text-underline-offset: 3px;
+  }
+  .legal-card a:hover { color: var(--orange-dark); }
+  .legal-card a:focus-visible { outline: 2px solid var(--orange); outline-offset: 3px; border-radius: 3px; }
+
   /* FOOTER */
   footer { background: var(--cream); color: var(--body); font-size: 13px; padding: 48px 0 24px; }
   .footer-grid {
@@ -426,6 +476,7 @@
     .section-head h2 { font-size: 30px; }
     .steps, .why-grid { grid-template-columns: 1fr; gap: 36px; max-width: 560px; }
     .vocab-grid { grid-template-columns: 1fr; }
+    .legal-card h1 { font-size: 34px; }
     .cta h2 { font-size: 32px; }
     .partner h2 { font-size: 32px; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -442,6 +493,10 @@
     .section-head h2 { font-size: 26px; }
     .deal-card, .deal-callouts { padding-left: 18px; padding-right: 18px; }
     .vocab-card { padding: 24px; }
+    .legal-page { padding: 40px 0; }
+    .legal-card { padding: 28px 22px; border-radius: 14px; }
+    .legal-card h1 { font-size: 30px; }
+    .legal-card h2 { font-size: 19px; }
     .cta h2 { font-size: 28px; }
     .partner h2 { font-size: 28px; }
     .footer-grid { grid-template-columns: 1fr; gap: 24px; }
